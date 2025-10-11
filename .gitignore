@@ -1,0 +1,17 @@
+# Ignore virtual environments
+venv/
+
+# Common Python ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.sqlite3
+
+# VS Code settings
+.vscode/
+
+# System / temporary files
+.DS_Store
+Thumbs.db

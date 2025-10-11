@@ -7,14 +7,14 @@ def create_table():
     create_tables()
 
 def add_user(data):
-    """Add a new user to the database."""
+    """Add a new user to the database (role = 2 by default)."""
     execute_query("""
-        INSERT INTO users (name, email, phone1, phone2, address, city, district, username, password)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (name, email, phone1, phone2, address, city, district, username, password, role)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data["name"], data["email"], data["phone1"], data["phone2"],
         data["address"], data["city"], data["district"],
-        data["username"], data["password"]
+        data["username"], data["password"], 2  # default: Staff
     ))
 
 def get_user_by_username(username):
@@ -31,7 +31,8 @@ def get_user_by_username(username):
             "city": row[6],
             "district": row[7],
             "username": row[8],
-            "password": row[9]
+            "password": row[9],
+            "role": row[10]
         }
     return None
 

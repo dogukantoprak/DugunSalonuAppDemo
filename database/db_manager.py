@@ -34,11 +34,9 @@ def fetch_all(query, params=()):
     return rows
 
 def create_tables():
-    """Create all required tables if they don't exist."""
     conn = connect()
     cursor = conn.cursor()
 
-    # Users table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +48,8 @@ def create_tables():
             city TEXT,
             district TEXT,
             username TEXT UNIQUE,
-            password TEXT
+            password TEXT,
+            role INTEGER DEFAULT 2  -- 1: Admin, 2: Staff, 3: Viewer
         )
     """)
 
