@@ -13,10 +13,6 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Düğün Salonu Yönetim Sistemi")
-        self.set_window_geometry(500, 600)
-        self.resizable(False, False)
-
         self.current_page = None
         self.current_page_name: str | None = None
         self.logged_in_user: dict | None = None
@@ -27,6 +23,10 @@ class App(ctk.CTk):
         self.fullscreen_strategy = (
             "zoomed" if platform.system().lower() == "windows" else "fullscreen"
         )
+
+        self.title("Düğün Salonu Yönetim Sistemi")
+        self.set_window_geometry(500, 600)
+        self.resizable(False, False)
 
         self.bind("<Escape>", self._exit_fullscreen_shortcut)
 
