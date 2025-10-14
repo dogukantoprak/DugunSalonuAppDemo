@@ -15,6 +15,16 @@ def execute_query(query, params=()):
     conn.commit()
     conn.close()
 
+def execute_insert(query, params=()):
+    """Run INSERT queries and return the inserted row id."""
+    conn = connect()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    conn.commit()
+    last_id = cursor.lastrowid
+    conn.close()
+    return last_id
+
 def fetch_one(query, params=()):
     """Run SELECT query and return one record."""
     conn = connect()
@@ -51,6 +61,42 @@ def create_tables():
             password TEXT,
             role INTEGER DEFAULT 2  -- 1: Admin, 2: Staff, 3: Viewer
         )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reservations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_date TEXT NOT NULL,
+            start_time TEXT,
+            end_time TEXT,
+            event_type TEXT,
+            guests INTEGER,
+            salon TEXT,
+            client_name TEXT,
+            tc_identity TEXT,
+            phone TEXT,
+            address TEXT,
+            contract_no TEXT,
+            contract_date TEXT,
+            status TEXT,
+            event_price REAL,
+            menu_price REAL,
+            deposit_percent REAL,
+            deposit_amount REAL,
+            installments INTEGER,
+            payment_type TEXT,
+            tahsilatlar TEXT,
+            menu_name TEXT,
+            menu_detail TEXT,
+            special_request TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_reservations_event_date
+        ON reservations (event_date)
     """)
 
     conn.commit()
