@@ -1,5 +1,6 @@
 # main.py
 from datetime import datetime
+import platform
 
 import customtkinter as ctk
 from ui.login_page import LoginPage
@@ -21,6 +22,11 @@ class App(ctk.CTk):
         self.logged_in_user: dict | None = None
         self.pages: dict[str, ctk.CTkFrame] = {}
         self.transient_pages = {"login", "register"}
+        self.is_fullscreen = False
+        self.previous_geometry: str | None = None
+        self.fullscreen_strategy = (
+            "zoomed" if platform.system().lower() == "windows" else "fullscreen"
+        )
 
         self.bind("<Escape>", self._exit_fullscreen_shortcut)
 
@@ -31,14 +37,41 @@ class App(ctk.CTk):
         screen_height = self.winfo_screenheight()
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
-        self.geometry(f"{width}x{height}+{x}+{y}")
+        if not self.is_fullscreen:
+            self.geometry(f"{width}x{height}+{x}+{y}")
 
     def enter_fullscreen(self):
-        self.attributes("-fullscreen", True)
+        if self.is_fullscreen:
+            return
+        self.previous_geometry = self.geometry()
+
+        if self.fullscreen_strategy == "fullscreen":
+            self.attributes("-fullscreen", True)
+        else:
+            self.attributes("-fullscreen", False)
+            try:
+                self.state("zoomed")
+            except Exception:
+                self.attributes("-zoomed", True)
+
+        self.is_fullscreen = True
 
     def exit_fullscreen(self):
-        self.attributes("-fullscreen", False)
-        self.state("normal")
+        if not self.is_fullscreen:
+            return
+
+        if self.fullscreen_strategy == "fullscreen":
+            self.attributes("-fullscreen", False)
+        else:
+            try:
+                self.state("normal")
+            except Exception:
+                self.attributes("-zoomed", False)
+
+        if self.previous_geometry:
+            self.geometry(self.previous_geometry)
+        self.previous_geometry = None
+        self.is_fullscreen = False
 
     def _exit_fullscreen_shortcut(self, _event=None):
         self.exit_fullscreen()
