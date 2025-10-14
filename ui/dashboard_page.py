@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from datetime import datetime, timedelta
+from datetime import datetime
 import calendar
 from tkinter import messagebox
 
@@ -12,6 +12,9 @@ class DashboardPage(ctk.CTkFrame):
         self.master = master
         self.user = user or {}
         self._month_cache = {}
+        self._calendar_dirty = True
+        self._last_rendered_months = []
+        self._last_rendered_today = None
 
         # Callback fonksiyonlar
         self.on_logout = on_logout
@@ -70,23 +73,36 @@ class DashboardPage(ctk.CTkFrame):
         months_frame = ctk.CTkFrame(calendar_frame)
         months_frame.pack(padx=10, pady=10, fill="x")
         self.months_frame = months_frame
-        self.refresh_calendar()
+        self.refresh_calendar(force=True)
 
         # Renk Efsanesi
         self.create_legend()
 
-    def refresh_calendar(self):
+    def refresh_calendar(self, force=False):
         if not hasattr(self, "months_frame"):
             return
-        self._month_cache.clear()
+        today = datetime.now().date()
+        month_dates = list(self._target_months(today, count=3))
+        month_keys = [(month.year, month.month) for month in month_dates]
+
+        if (
+            not force
+            and not self._calendar_dirty
+            and self._last_rendered_months == month_keys
+            and self._last_rendered_today == today
+        ):
+            return
+
         for child in self.months_frame.winfo_children():
             child.destroy()
 
-        today = datetime.now()
-        for i in range(3):
-            month_date = (today.replace(day=1) + timedelta(days=32 * i)).replace(day=1)
+        for month_date in month_dates:
             month_events = self._get_month_events(month_date.year, month_date.month)
             self.add_month_calendar(self.months_frame, month_date, month_events)
+
+        self._calendar_dirty = False
+        self._last_rendered_months = month_keys
+        self._last_rendered_today = today
 
     def _get_month_events(self, year, month):
         key = (year, month)
@@ -97,6 +113,14 @@ class DashboardPage(ctk.CTkFrame):
                 self._month_cache[key] = {}
                 messagebox.showerror("Hata", f"Rezervasyonlar yüklenemedi:\n{exc}")
         return self._month_cache[key]
+
+    def _target_months(self, base_date, count=3):
+        month_start = datetime(base_date.year, base_date.month, 1)
+        for _ in range(count):
+            yield month_start
+            year = month_start.year + (month_start.month // 12)
+            month = month_start.month % 12 + 1
+            month_start = datetime(year, month, 1)
 
     def create_legend(self):
         legend_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
@@ -202,6 +226,10 @@ class DashboardPage(ctk.CTkFrame):
         self.user = user or {}
         if hasattr(self, "welcome_label"):
             self.welcome_label.configure(text=self._build_welcome_text())
+
+    def mark_dirty(self):
+        self._calendar_dirty = True
+        self._month_cache.clear()
 
     def open_reservations_for_date(self, date_str=None):
         if not self.on_open_reservations:

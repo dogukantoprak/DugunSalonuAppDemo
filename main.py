@@ -3,6 +3,7 @@ from datetime import datetime
 import platform
 
 import customtkinter as ctk
+from controllers.reservation_controller import clear_reservation_cache
 from ui.login_page import LoginPage
 from ui.register_page import RegisterPage
 from ui.reservation_form_page import ReservationFormPage
@@ -179,6 +180,7 @@ class App(ctk.CTk):
         reservation_page.pack(expand=True, fill="both")
 
         if highlight_date:
+            reservation_page.mark_dirty()
             try:
                 target = datetime.strptime(highlight_date, "%Y-%m-%d")
                 reservation_page.current_date = datetime(target.year, target.month, 1)
@@ -188,7 +190,8 @@ class App(ctk.CTk):
             except ValueError:
                 reservation_page.refresh_data()
         else:
-            reservation_page.refresh_data()
+            if reservation_page.needs_refresh:
+                reservation_page.refresh_data()
 
         self.current_page = reservation_page
         self.current_page_name = "reservation"
@@ -224,6 +227,15 @@ class App(ctk.CTk):
         target_date = None
         if info:
             target_date = info.get("event_date")
+
+        reservation_page = self.pages.get("reservation")
+        if reservation_page:
+            reservation_page.mark_dirty()
+
+        dashboard = self.pages.get("dashboard")
+        if dashboard:
+            dashboard.mark_dirty()
+
         self.show_reservation_page(target_date)
 
     def logout(self):
@@ -234,6 +246,7 @@ class App(ctk.CTk):
             if page:
                 page.destroy()
         self.logged_in_user = None
+        clear_reservation_cache()
         self.show_login_page()
 
 

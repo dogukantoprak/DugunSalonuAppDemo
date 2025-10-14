@@ -17,6 +17,8 @@ class ReservationPage(ctk.CTkFrame):
         self.current_date = datetime.now()
         self.selected_date = None
         self.event_data = {}
+        self._needs_refresh = True
+        self._last_target_date: str | None = None
 
         self.month_labels = [
             "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
@@ -305,6 +307,15 @@ class ReservationPage(ctk.CTkFrame):
             self.selected_date = target_date
         if self.selected_date:
             self.show_reservations(self.selected_date)
+        self._needs_refresh = False
+        self._last_target_date = target_date or self.selected_date
+
+    def mark_dirty(self):
+        self._needs_refresh = True
+
+    @property
+    def needs_refresh(self):
+        return self._needs_refresh
 
     @staticmethod
     def _format_time(value):

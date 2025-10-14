@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from threading import RLock
 from typing import Any, Dict, List, Tuple
 
 from models.reservation_model import (
@@ -12,6 +13,10 @@ from models.reservation_model import (
 
 TIME_SLOT_MINUTES = 15
 DEFAULT_EVENT_DURATION_MINUTES = 60
+
+_CACHE_LOCK = RLock()
+_MONTH_CACHE: Dict[tuple[int, int], Dict[str, List[Dict[str, Any]]]] = {}
+_DAY_CACHE: Dict[str, List[Dict[str, Any]]] = {}
 
 
 def create_reservation(raw_data: Dict[str, Any]) -> Tuple[bool, str, Dict[str, Any] | None]:
@@ -30,6 +35,8 @@ def create_reservation(raw_data: Dict[str, Any]) -> Tuple[bool, str, Dict[str, A
     except Exception as exc:
         return False, f"Rezervasyon kaydedilemedi: {exc}", None
 
+    _invalidate_cache_for_date(payload["event_date"])
+
     return True, "Rezervasyon başarıyla kaydedildi.", {
         "id": reservation_id,
         "event_date": payload["event_date"],
@@ -38,17 +45,39 @@ def create_reservation(raw_data: Dict[str, Any]) -> Tuple[bool, str, Dict[str, A
 
 def get_calendar_data(year: int, month: int) -> Dict[str, List[Dict[str, Any]]]:
     """Return reservations grouped by ISO date for a month."""
+    key = (year, month)
+    with _CACHE_LOCK:
+        cached = _MONTH_CACHE.get(key)
+        if cached is not None:
+            return _clone_month_cache(cached)
+
     reservations = get_reservations_for_month(year, month)
     grouped: Dict[str, List[Dict[str, Any]]] = {}
     for res in reservations:
         grouped.setdefault(res["event_date"], []).append(_simplify_for_calendar(res))
-    return grouped
+
+    with _CACHE_LOCK:
+        _MONTH_CACHE[key] = grouped
+        for date_str in grouped.keys():
+            _DAY_CACHE.pop(date_str, None)
+
+    return _clone_month_cache(grouped)
 
 
 def get_reservations_for_date(date_str: str) -> List[Dict[str, Any]]:
     """Return full reservation records for a given date (supports multiple formats)."""
     iso_date = _ensure_iso_date(date_str, "Rezervasyon tarihi")
-    return get_reservations_by_date(iso_date)
+    with _CACHE_LOCK:
+        cached = _DAY_CACHE.get(iso_date)
+        if cached is not None:
+            return _clone_day_cache(cached)
+
+    records = get_reservations_by_date(iso_date)
+
+    with _CACHE_LOCK:
+        _DAY_CACHE[iso_date] = records
+
+    return _clone_day_cache(records)
 
 
 def get_unavailable_slots(event_date: str, salon: str | None) -> Dict[str, List[str]]:
@@ -58,7 +87,7 @@ def get_unavailable_slots(event_date: str, salon: str | None) -> Dict[str, List[
     if not salon_clean:
         return {"blocked": [], "ranges": []}
 
-    reservations = get_reservations_by_date(iso_date)
+    reservations = get_reservations_for_date(iso_date)
     blocked_minutes: set[int] = set()
     busy_ranges: list[tuple[int, int]] = []
     target_salon = salon_clean.lower()
@@ -91,6 +120,12 @@ def get_unavailable_slots(event_date: str, salon: str | None) -> Dict[str, List[
         f"{_format_time(start)} - {_format_time(end)}" for start, end in unique_ranges.keys()
     ]
     return {"blocked": blocked, "ranges": range_labels}
+
+
+def clear_reservation_cache():
+    with _CACHE_LOCK:
+        _MONTH_CACHE.clear()
+        _DAY_CACHE.clear()
 
 
 def _prepare_payload(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -163,6 +198,27 @@ def _simplify_for_calendar(reservation: Dict[str, Any]) -> Dict[str, Any]:
         "menu": reservation.get("menu_name"),
         "notes": reservation.get("special_request"),
     }
+
+
+def _clone_month_cache(source: Dict[str, List[Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
+    return {day: [event.copy() for event in events] for day, events in source.items()}
+
+
+def _clone_day_cache(source: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return [item.copy() for item in source]
+
+
+def _invalidate_cache_for_date(event_date_iso: str | None):
+    if not event_date_iso:
+        return
+    with _CACHE_LOCK:
+        _DAY_CACHE.pop(event_date_iso, None)
+        try:
+            parsed = datetime.strptime(event_date_iso, "%Y-%m-%d")
+        except ValueError:
+            return
+        key = (parsed.year, parsed.month)
+        _MONTH_CACHE.pop(key, None)
 
 
 def _ensure_iso_date(value: Any, field_label: str, required: bool = True) -> str | None:
