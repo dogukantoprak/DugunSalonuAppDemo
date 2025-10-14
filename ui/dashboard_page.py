@@ -12,9 +12,13 @@ class DashboardPage(ctk.CTkFrame):
         self.master = master
         self.user = user or {}
         self._month_cache = {}
+        self._auto_refresh_ms = 10 * 60 * 1000  # 10 minutes
+        self._auto_refresh_job = None
         self._calendar_dirty = True
         self._last_rendered_months = []
         self._last_rendered_today = None
+        self._last_refresh_time = None
+        self._is_visible = False
 
         # Callback fonksiyonlar
         self.on_logout = on_logout
@@ -70,6 +74,24 @@ class DashboardPage(ctk.CTkFrame):
         header = ctk.CTkLabel(calendar_frame, text="3 Aylık Rezervasyon Takvimi", font=("Arial", 18, "bold"))
         header.pack(pady=(10, 20))
 
+        controls_frame = ctk.CTkFrame(calendar_frame, fg_color="transparent")
+        controls_frame.pack(fill="x", padx=10, pady=(0, 10))
+
+        self.refresh_button = ctk.CTkButton(
+            controls_frame,
+            text="Takvimi Yenile",
+            width=140,
+            command=self.manual_refresh,
+        )
+        self.refresh_button.pack(side="left")
+
+        self.refresh_status_label = ctk.CTkLabel(
+            controls_frame,
+            text="Son güncelleme: -",
+            font=("Arial", 12),
+        )
+        self.refresh_status_label.pack(side="left", padx=(12, 0))
+
         months_frame = ctk.CTkFrame(calendar_frame)
         months_frame.pack(padx=10, pady=10, fill="x")
         self.months_frame = months_frame
@@ -84,6 +106,7 @@ class DashboardPage(ctk.CTkFrame):
         today = datetime.now().date()
         month_dates = list(self._target_months(today, count=3))
         month_keys = [(month.year, month.month) for month in month_dates]
+        self._prune_month_cache(month_keys)
 
         if (
             not force
@@ -100,9 +123,12 @@ class DashboardPage(ctk.CTkFrame):
             month_events = self._get_month_events(month_date.year, month_date.month)
             self.add_month_calendar(self.months_frame, month_date, month_events)
 
+        self._last_refresh_time = datetime.now()
         self._calendar_dirty = False
         self._last_rendered_months = month_keys
         self._last_rendered_today = today
+        self._update_refresh_status()
+        self._schedule_auto_refresh()
 
     def _get_month_events(self, year, month):
         key = (year, month)
@@ -114,6 +140,11 @@ class DashboardPage(ctk.CTkFrame):
                 messagebox.showerror("Hata", f"Rezervasyonlar yüklenemedi:\n{exc}")
         return self._month_cache[key]
 
+    def _prune_month_cache(self, active_keys):
+        for cache_key in list(self._month_cache.keys()):
+            if cache_key not in active_keys:
+                self._month_cache.pop(cache_key, None)
+
     def _target_months(self, base_date, count=3):
         month_start = datetime(base_date.year, base_date.month, 1)
         for _ in range(count):
@@ -121,6 +152,26 @@ class DashboardPage(ctk.CTkFrame):
             year = month_start.year + (month_start.month // 12)
             month = month_start.month % 12 + 1
             month_start = datetime(year, month, 1)
+
+    def _schedule_auto_refresh(self):
+        self._cancel_auto_refresh()
+        self._auto_refresh_job = self.after(self._auto_refresh_ms, self._auto_refresh)
+
+    def _cancel_auto_refresh(self):
+        if self._auto_refresh_job is not None:
+            try:
+                self.after_cancel(self._auto_refresh_job)
+            except Exception:
+                pass
+            self._auto_refresh_job = None
+
+    def _auto_refresh(self):
+        self._auto_refresh_job = None
+        self.mark_dirty(status_pending=False)
+        if self._is_visible:
+            self.refresh_calendar(force=True)
+        else:
+            self._schedule_auto_refresh()
 
     def create_legend(self):
         legend_frame = ctk.CTkFrame(self.content_frame, fg_color="transparent")
@@ -227,9 +278,45 @@ class DashboardPage(ctk.CTkFrame):
         if hasattr(self, "welcome_label"):
             self.welcome_label.configure(text=self._build_welcome_text())
 
-    def mark_dirty(self):
+    def mark_dirty(self, status_pending=True):
         self._calendar_dirty = True
         self._month_cache.clear()
+        if status_pending:
+            self._update_refresh_status(pending=True)
+
+    def manual_refresh(self):
+        self.mark_dirty(status_pending=False)
+        self.refresh_calendar(force=True)
+
+    def on_show(self):
+        self._is_visible = True
+        should_refresh = (
+            self._calendar_dirty
+            or self._last_refresh_time is None
+            or self._last_rendered_today != datetime.now().date()
+        )
+        if should_refresh:
+            self.refresh_calendar(force=self._calendar_dirty)
+        else:
+            self._update_refresh_status()
+
+    def on_hide(self):
+        self._is_visible = False
+
+    def destroy(self):
+        self._cancel_auto_refresh()
+        super().destroy()
+
+    def _update_refresh_status(self, pending=False):
+        if not hasattr(self, "refresh_status_label"):
+            return
+        if pending:
+            text = "Son güncelleme: bekleniyor..."
+        elif self._last_refresh_time:
+            text = f"Son güncelleme: {self._last_refresh_time.strftime('%H:%M:%S')}"
+        else:
+            text = "Son güncelleme: -"
+        self.refresh_status_label.configure(text=text)
 
     def open_reservations_for_date(self, date_str=None):
         if not self.on_open_reservations:

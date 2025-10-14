@@ -81,6 +81,12 @@ class App(ctk.CTk):
         if not self.current_page:
             return
         name = self.current_page_name
+        on_hide = getattr(self.current_page, "on_hide", None)
+        if callable(on_hide):
+            try:
+                on_hide()
+            except Exception:
+                pass
         if name in self.transient_pages:
             self.current_page.destroy()
         else:
@@ -156,8 +162,13 @@ class App(ctk.CTk):
 
         dashboard.update_user(self.logged_in_user)
 
-        dashboard.refresh_calendar()
         dashboard.pack(expand=True, fill="both")
+        on_show = getattr(dashboard, "on_show", None)
+        if callable(on_show):
+            try:
+                on_show()
+            except Exception:
+                pass
         self.current_page = dashboard
         self.current_page_name = "dashboard"
 
