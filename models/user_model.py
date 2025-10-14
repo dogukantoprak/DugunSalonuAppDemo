@@ -50,6 +50,7 @@ def get_user_by_email(email):
             "city": row[6],
             "district": row[7],
             "username": row[8],
-            "password": row[9]
+            "password": row[9],
+            "role": row[10]
         }
     return None

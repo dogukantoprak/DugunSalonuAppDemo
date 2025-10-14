@@ -63,12 +63,14 @@ class LoginPage(ctk.CTkFrame):
             messagebox.showwarning("Uyarı", "Lütfen kullanıcı adı ve şifre girin.")
             return
 
-        if login_user(username, password):  # ✅ correct backend call
-            messagebox.showinfo("Başarılı", "Giriş başarılı!")
+        success, message, user = login_user(username, password)
+
+        if success:
+            messagebox.showinfo("Başarılı", message)
             if self.on_login:
-                self.on_login(username)
+                self.on_login(user)
         else:
-            messagebox.showerror("Hata", "Geçersiz kullanıcı adı veya şifre!")
+            messagebox.showerror("Hata", message)
 
     def handle_register(self):
         if self.on_register:

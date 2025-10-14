@@ -2,10 +2,16 @@
 from models.user_model import get_user_by_username, get_user_by_email, add_user
 
 def login_user(username, password):
+    """Validate credentials and return (success, message, user) tuple."""
     user = get_user_by_username(username)
-    if user and user["password"] == password:
-        return True
-    return False
+    if not user:
+        return False, "Kullanıcı bulunamadı.", None
+
+    if user["password"] != password:
+        return False, "Geçersiz kullanıcı adı veya şifre!", None
+
+    sanitized_user = {key: value for key, value in user.items() if key != "password"}
+    return True, "Giriş başarılı!", sanitized_user
 
 def register_user(data):
     """Registers a new user, returns (success, message) tuple."""
