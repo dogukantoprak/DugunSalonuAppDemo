@@ -33,13 +33,18 @@ class ReservationFormPage(ctk.CTkFrame):
             start_hour=10, end_hour=24, include_end=True, start_offset=self.time_step_minutes
         )
         self.slot_message = tk.StringVar()
+        self.event_types = ["Düğün", "Nişan", "Kına", "Toplantı", "Mezuniyet", "Diğer"]
+        self.salon_options = ["Salon A", "Salon B", "Salon C"]
+        self.installment_options = [str(i) for i in range(1, 13)]
+        self.payment_options = ["Nakit", "Kart", "Havale", "Çek"]
+        self.menu_options = ["Klasik Menü", "Lüks Menü", "Özel Menü"]
+        self.status_options = ["Ön Rezervasyon", "Kesin Rezervasyon"]
 
         self.build_reservation_tab(tab_res)
         self.build_price_tab(tab_price)
         self.build_menu_tab(tab_menu)
         self._setup_time_slot_watchers()
-        self._update_time_slots()
-        self._update_end_time_options(self.start_time.get())
+        self.prepare(default_date)
 
         # --- Alt Butonlar ---
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -65,7 +70,6 @@ class ReservationFormPage(ctk.CTkFrame):
         self.date_entry = DateEntry(tab, width=18, background="#1E3A8A", foreground="white",
                                     borderwidth=2, date_pattern="dd/mm/yyyy")
         self.date_entry.grid(row=0, column=1, padx=20, pady=6, sticky="w")
-        self._apply_default_date()
 
         # Başlama / Bitiş Saati
         ctk.CTkLabel(tab, text="Başlama Saati:").grid(row=1, column=0, padx=20, pady=6, sticky="w")
@@ -87,7 +91,7 @@ class ReservationFormPage(ctk.CTkFrame):
 
         # Etkinlik Türü
         ctk.CTkLabel(tab, text="Etkinlik Türü:").grid(row=3, column=0, padx=20, pady=6, sticky="w")
-        self.type_box = ctk.CTkComboBox(tab, values=["Düğün", "Nişan", "Kına", "Toplantı", "Mezuniyet", "Diğer"])
+        self.type_box = ctk.CTkComboBox(tab, values=self.event_types)
         self.type_box.grid(row=3, column=1, padx=20, pady=6, sticky="w")
 
         # Davetli Sayısı
@@ -97,7 +101,7 @@ class ReservationFormPage(ctk.CTkFrame):
 
         # Salon
         ctk.CTkLabel(tab, text="Salon Adı:").grid(row=4, column=0, padx=20, pady=6, sticky="w")
-        self.salon_box = ctk.CTkComboBox(tab, values=["Salon A", "Salon B", "Salon C"], command=self._on_salon_change)
+        self.salon_box = ctk.CTkComboBox(tab, values=self.salon_options, command=self._on_salon_change)
         self.salon_box.grid(row=4, column=1, padx=20, pady=6, sticky="w")
 
         # Kişisel Bilgiler
@@ -129,7 +133,7 @@ class ReservationFormPage(ctk.CTkFrame):
 
         # Rezervasyon Türü
         ctk.CTkLabel(tab, text="Rezervasyon Durumu:").grid(row=9, column=0, padx=20, pady=6, sticky="w")
-        self.status_box = ctk.CTkComboBox(tab, values=["Ön Rezervasyon", "Kesin Rezervasyon"], width=200)
+        self.status_box = ctk.CTkComboBox(tab, values=self.status_options, width=200)
         self.status_box.grid(row=9, column=1, padx=20, pady=6, sticky="w")
 
     # ====================================================
@@ -155,11 +159,11 @@ class ReservationFormPage(ctk.CTkFrame):
         self.deposit_amount.grid(row=1, column=3, padx=20, pady=6, sticky="w")
 
         ctk.CTkLabel(tab, text="Taksit Sayısı:").grid(row=2, column=0, padx=20, pady=6, sticky="w")
-        self.installments = ctk.CTkComboBox(tab, values=[str(i) for i in range(1, 13)], width=80)
+        self.installments = ctk.CTkComboBox(tab, values=self.installment_options, width=80)
         self.installments.grid(row=2, column=1, padx=20, pady=6, sticky="w")
 
         ctk.CTkLabel(tab, text="Ödeme Türü:").grid(row=2, column=2, padx=20, pady=6, sticky="w")
-        self.payment_type = ctk.CTkComboBox(tab, values=["Nakit", "Kart", "Havale", "Çek"], width=120)
+        self.payment_type = ctk.CTkComboBox(tab, values=self.payment_options, width=120)
         self.payment_type.grid(row=2, column=3, padx=20, pady=6, sticky="w")
 
         # Tahsilat listesi (örnek placeholder)
@@ -177,7 +181,7 @@ class ReservationFormPage(ctk.CTkFrame):
         tab.grid_columnconfigure((0, 1), weight=1)
 
         ctk.CTkLabel(tab, text="Menü Seçimi:").grid(row=0, column=0, padx=20, pady=6, sticky="w")
-        self.menu_box = ctk.CTkComboBox(tab, values=["Klasik Menü", "Lüks Menü", "Özel Menü"], width=200)
+        self.menu_box = ctk.CTkComboBox(tab, values=self.menu_options, width=200)
         self.menu_box.grid(row=0, column=1, padx=20, pady=6, sticky="w")
 
         ctk.CTkLabel(tab, text="Menü Detayı:").grid(row=1, column=0, padx=20, pady=6, sticky="nw")
@@ -330,11 +334,50 @@ class ReservationFormPage(ctk.CTkFrame):
         if self.on_back:
             self.on_back()
 
-    def _apply_default_date(self):
-        if not self.default_date:
-            return
-        try:
-            parsed = datetime.strptime(self.default_date, "%Y-%m-%d")
-        except ValueError:
-            return
-        self.date_entry.set_date(parsed)
+    def prepare(self, default_date=None):
+        self.default_date = default_date
+
+        target_date = datetime.now()
+        if default_date:
+            try:
+                target_date = datetime.strptime(default_date, "%Y-%m-%d")
+            except ValueError:
+                target_date = datetime.now()
+
+        self.date_entry.set_date(target_date)
+        self.contract_date.set_date(target_date)
+
+        for entry in (
+            self.guest_entry,
+            self.name_entry,
+            self.tc_entry,
+            self.phone_entry,
+            self.contract_no,
+            self.event_price,
+            self.menu_price,
+            self.deposit_percent,
+            self.deposit_amount,
+        ):
+            entry.delete(0, tk.END)
+
+        self.address_entry.delete("1.0", tk.END)
+        self.tahsilat_box.delete("1.0", tk.END)
+        self.menu_detail.delete("1.0", tk.END)
+        self.special_request.delete("1.0", tk.END)
+
+        self.type_box.set(self.event_types[0] if self.event_types else "")
+        self.salon_box.set(self.salon_options[0] if self.salon_options else "")
+        self.status_box.set(self.status_options[0] if self.status_options else "")
+        self.installments.set(self.installment_options[0] if self.installment_options else "")
+        self.payment_type.set(self.payment_options[0] if self.payment_options else "")
+        self.menu_box.set(self.menu_options[0] if self.menu_options else "")
+
+        self.start_time.set("")
+        if self.all_end_slots:
+            self.end_time.set(self.all_end_slots[0])
+        else:
+            self.end_time.set("")
+
+        self.slot_message.set("")
+        self._update_time_slots()
+        self._update_end_time_options(self.start_time.get())

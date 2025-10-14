@@ -6,21 +6,26 @@ from ui.login_page import LoginPage
 from ui.register_page import RegisterPage
 from ui.reservation_form_page import ReservationFormPage
 from ui.reservation_page import ReservationPage
+from ui.dashboard_page import DashboardPage
 
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        # --- Window setup ---
         self.title("Düğün Salonu Yönetim Sistemi")
         self.set_window_geometry(500, 600)
         self.resizable(False, False)
 
-        # --- Page management ---
         self.current_page = None
+        self.current_page_name: str | None = None
+        self.logged_in_user: dict | None = None
+        self.pages: dict[str, ctk.CTkFrame] = {}
+        self.transient_pages = {"login", "register"}
+
+        self.bind("<Escape>", self._exit_fullscreen_shortcut)
+
         self.show_login_page()
 
-    # --- Utility: center window ---
     def set_window_geometry(self, width, height):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
@@ -28,45 +33,116 @@ class App(ctk.CTk):
         y = (screen_height // 2) - (height // 2)
         self.geometry(f"{width}x{height}+{x}+{y}")
 
-    # --- Page switching functions ---
+    def enter_fullscreen(self):
+        self.attributes("-fullscreen", True)
+
+    def exit_fullscreen(self):
+        self.attributes("-fullscreen", False)
+        self.state("normal")
+
+    def _exit_fullscreen_shortcut(self, _event=None):
+        self.exit_fullscreen()
+
+    def hide_current_page(self):
+        if not self.current_page:
+            return
+        name = self.current_page_name
+        if name in self.transient_pages:
+            self.current_page.destroy()
+        else:
+            self.current_page.pack_forget()
+        self.current_page = None
+        self.current_page_name = None
+
     def show_login_page(self):
         """Display the login page."""
-        self.clear_current_page()
+        self.hide_current_page()
+        self.exit_fullscreen()
         self.set_window_geometry(500, 600)
         self.resizable(False, False)
-        self.current_page = LoginPage(
+        self.logged_in_user = None
+
+        login_page = LoginPage(
             self,
-            on_login=self.open_dashboard,
-            on_register=self.show_register_page
+            on_login=self.show_dashboard,
+            on_register=self.show_register_page,
         )
-        self.current_page.pack(expand=True, fill="both")
+        login_page.pack(expand=True, fill="both")
+        self.current_page = login_page
+        self.current_page_name = "login"
 
     def show_register_page(self):
         """Display the registration page."""
-        self.clear_current_page()
+        self.hide_current_page()
+        self.exit_fullscreen()
         self.set_window_geometry(520, 720)
         self.resizable(False, False)
-        self.current_page = RegisterPage(
+
+        register_page = RegisterPage(
             self,
             on_register_complete=lambda data: self.show_login_page(),
-            on_back=self.show_login_page
+            on_back=self.show_login_page,
         )
-        self.current_page.pack(expand=True, fill="both")
+        register_page.pack(expand=True, fill="both")
+        self.current_page = register_page
+        self.current_page_name = "register"
 
-    def open_dashboard(self, username):
-        """When login is successful."""
-        print(f"✅ Giriş yapan kullanıcı: {username}")
-        self.show_reservation_page()
+    def show_dashboard(self, user: dict | None = None):
+        """Render dashboard after successful login."""
+        if user:
+            self.logged_in_user = user
 
-    def show_reservation_page(self, highlight_date: str | None = None):
-        """Temporary navigation to reservation calendar until dashboard is ready."""
-        self.clear_current_page()
-        self.set_window_geometry(1100, 780)
+        if not self.logged_in_user:
+            self.show_login_page()
+            return
+
+        print(f"✅ Giriş yapan kullanıcı: {self.logged_in_user.get('username')}")
+
+        self.hide_current_page()
+        self.enter_fullscreen()
         self.resizable(True, True)
 
-        reservation_page = ReservationPage(self, on_back=self.show_login_page)
+        open_reservations = lambda date=None: self.show_reservation_page(date)
+
+        dashboard = self.pages.get("dashboard")
+        if dashboard is None:
+            dashboard = DashboardPage(
+                self,
+                user=self.logged_in_user,
+                on_logout=self.logout,
+                on_open_reservations=open_reservations,
+                on_open_personnel=None,
+                on_open_reports=None,
+                on_open_settings=None,
+            )
+            self.pages["dashboard"] = dashboard
+        else:
+            dashboard.on_logout = self.logout
+            dashboard.on_open_reservations = open_reservations
+
+        dashboard.update_user(self.logged_in_user)
+
+        dashboard.refresh_calendar()
+        dashboard.pack(expand=True, fill="both")
+        self.current_page = dashboard
+        self.current_page_name = "dashboard"
+
+    def show_reservation_page(self, highlight_date: str | None = None):
+        """Display the reservation calendar page."""
+        self.hide_current_page()
+        self.enter_fullscreen()
+        self.resizable(True, True)
+
+        back_target = self.show_dashboard if self.logged_in_user else self.show_login_page
+
+        reservation_page = self.pages.get("reservation")
+        if reservation_page is None:
+            reservation_page = ReservationPage(self, on_back=back_target)
+            self.pages["reservation"] = reservation_page
+        else:
+            reservation_page.on_back = back_target
+
         reservation_page.add_reservation = self.show_reservation_form
-        self.current_page = reservation_page
         reservation_page.pack(expand=True, fill="both")
 
         if highlight_date:
@@ -81,20 +157,34 @@ class App(ctk.CTk):
         else:
             reservation_page.refresh_data()
 
+        self.current_page = reservation_page
+        self.current_page_name = "reservation"
+
     def show_reservation_form(self, default_date: str | None = None):
         """Open reservation form page."""
-        self.clear_current_page()
-        self.set_window_geometry(960, 760)
+        self.hide_current_page()
+        self.enter_fullscreen()
         self.resizable(True, True)
 
-        form_page = ReservationFormPage(
-            self,
-            on_back=lambda: self.show_reservation_page(default_date),
-            on_saved=self.on_reservation_saved,
-            default_date=default_date,
-        )
-        self.current_page = form_page
+        def back_action():
+            self.show_reservation_page(default_date)
+
+        form_page = self.pages.get("reservation_form")
+        if form_page is None:
+            form_page = ReservationFormPage(
+                self,
+                on_back=back_action,
+                on_saved=self.on_reservation_saved,
+                default_date=default_date,
+            )
+            self.pages["reservation_form"] = form_page
+
+        form_page.on_back = back_action
+        form_page.on_saved = self.on_reservation_saved
+        form_page.prepare(default_date)
         form_page.pack(expand=True, fill="both")
+        self.current_page = form_page
+        self.current_page_name = "reservation_form"
 
     def on_reservation_saved(self, info: dict | None):
         """Handle navigation after saving a reservation."""
@@ -103,11 +193,15 @@ class App(ctk.CTk):
             target_date = info.get("event_date")
         self.show_reservation_page(target_date)
 
-    # --- Utility: clear current frame before showing new one ---
-    def clear_current_page(self):
-        if self.current_page:
-            self.current_page.destroy()
-            self.current_page = None
+    def logout(self):
+        """Clear current session and return to login page."""
+        self.hide_current_page()
+        for name in ("dashboard", "reservation", "reservation_form"):
+            page = self.pages.pop(name, None)
+            if page:
+                page.destroy()
+        self.logged_in_user = None
+        self.show_login_page()
 
 
 if __name__ == "__main__":
