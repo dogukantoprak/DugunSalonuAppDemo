@@ -7,8 +7,9 @@ from controllers.reservation_controller import clear_reservation_cache
 from ui.login_page import LoginPage
 from ui.register_page import RegisterPage
 from ui.reservation_form_page import ReservationFormPage
-from ui.reservation_page import ReservationPage
 from ui.dashboard_page import DashboardPage
+from ui.personnel_page import PersonnelPage
+from ui.reservation_page import ReservationPage
 
 class App(ctk.CTk):
     def __init__(self):
@@ -151,7 +152,7 @@ class App(ctk.CTk):
                 user=self.logged_in_user,
                 on_logout=self.logout,
                 on_open_reservations=open_reservations,
-                on_open_personnel=None,
+                on_open_personnel=self.show_personnel_page,
                 on_open_reports=None,
                 on_open_settings=None,
             )
@@ -159,6 +160,7 @@ class App(ctk.CTk):
         else:
             dashboard.on_logout = self.logout
             dashboard.on_open_reservations = open_reservations
+            dashboard.on_open_personnel = self.show_personnel_page
 
         dashboard.update_user(self.logged_in_user)
 
@@ -207,6 +209,25 @@ class App(ctk.CTk):
         self.current_page = reservation_page
         self.current_page_name = "reservation"
 
+    def show_personnel_page(self):
+        """Display the personnel management page."""
+        self.hide_current_page()
+        self.enter_fullscreen()
+        self.resizable(True, True)
+
+        back_target = self.show_dashboard if self.logged_in_user else self.show_login_page
+
+        personnel_page = self.pages.get("personnel")
+        if personnel_page is None:
+            personnel_page = PersonnelPage(self, on_back=back_target)
+            self.pages["personnel"] = personnel_page
+        else:
+            personnel_page.on_back = back_target
+
+        personnel_page.pack(expand=True, fill="both")
+        self.current_page = personnel_page
+        self.current_page_name = "personnel"
+
     def show_reservation_form(self, default_date: str | None = None):
         """Open reservation form page."""
         self.hide_current_page()
@@ -252,7 +273,7 @@ class App(ctk.CTk):
     def logout(self):
         """Clear current session and return to login page."""
         self.hide_current_page()
-        for name in ("dashboard", "reservation", "reservation_form"):
+        for name in ("dashboard", "reservation", "reservation_form", "personnel"):
             page = self.pages.pop(name, None)
             if page:
                 page.destroy()
