@@ -3,8 +3,9 @@ from collections import defaultdict
 from datetime import date
 
 import customtkinter as ctk
-from tkcalendar import DateEntry
 from tkinter import messagebox
+
+from ui.widgets import CTkDatePicker
 
 
 class PersonnelPage(ctk.CTkFrame):
@@ -188,7 +189,7 @@ class PersonnelPage(ctk.CTkFrame):
         self.assignment_person_box.grid(row=0, column=1, padx=10, pady=8, sticky="w")
 
         ctk.CTkLabel(form, text="Gorev Tarihi:", width=120).grid(row=0, column=2, padx=10, pady=8, sticky="e")
-        self.assignment_date = DateEntry(form, date_pattern="yyyy-mm-dd", width=18)
+        self.assignment_date = CTkDatePicker(form, date_pattern="yyyy-mm-dd", width=150)
         self.assignment_date.grid(row=0, column=3, padx=10, pady=8, sticky="w")
 
         ctk.CTkLabel(form, text="Gorev:", width=120).grid(row=1, column=0, padx=10, pady=8, sticky="e")

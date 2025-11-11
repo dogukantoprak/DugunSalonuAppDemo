@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from tkcalendar import DateEntry
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 
 from controllers.reservation_controller import create_reservation, get_unavailable_slots
+from ui.widgets import CTkDatePicker
 
 
 class ReservationFormPage(ctk.CTkFrame):
@@ -67,8 +67,7 @@ class ReservationFormPage(ctk.CTkFrame):
 
         # Tarih
         ctk.CTkLabel(tab, text="Tarih:").grid(row=0, column=0, padx=20, pady=6, sticky="w")
-        self.date_entry = DateEntry(tab, width=18, background="#1E3A8A", foreground="white",
-                                    borderwidth=2, date_pattern="dd/mm/yyyy")
+        self.date_entry = CTkDatePicker(tab, width=160, date_pattern="dd/mm/yyyy", button_text="📅")
         self.date_entry.grid(row=0, column=1, padx=20, pady=6, sticky="w")
 
         # Başlama / Bitiş Saati
@@ -127,8 +126,7 @@ class ReservationFormPage(ctk.CTkFrame):
         self.contract_no.grid(row=8, column=1, padx=20, pady=6, sticky="w")
 
         ctk.CTkLabel(tab, text="Sözleşme Tarihi:").grid(row=8, column=2, padx=20, pady=6, sticky="w")
-        self.contract_date = DateEntry(tab, width=18, background="#1E3A8A", foreground="white",
-                                       borderwidth=2, date_pattern="dd/mm/yyyy")
+        self.contract_date = CTkDatePicker(tab, width=160, date_pattern="dd/mm/yyyy", button_text="📅")
         self.contract_date.grid(row=8, column=3, padx=20, pady=6, sticky="w")
 
         # Rezervasyon Türü
