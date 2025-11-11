@@ -1,6 +1,15 @@
-"""Entry point kept for backward compatibility."""
+"""Launch the FastAPI backend used by the React frontend."""
 
-from DugunSalonuApp_Frontend.main import main
+import uvicorn
+
+
+def main():
+    uvicorn.run(
+        "DugunSalonuApp_Backend.api.server:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=False,
+    )
 
 
 if __name__ == "__main__":
