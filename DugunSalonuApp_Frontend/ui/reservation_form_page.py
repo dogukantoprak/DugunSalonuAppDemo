@@ -4,8 +4,11 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 
-from controllers.reservation_controller import create_reservation, get_unavailable_slots
-from ui.widgets import CTkDatePicker
+from DugunSalonuApp_Backend.controllers.reservation_controller import (
+    create_reservation,
+    get_unavailable_slots,
+)
+from .widgets import CTkDatePicker
 
 
 class ReservationFormPage(ctk.CTkFrame):

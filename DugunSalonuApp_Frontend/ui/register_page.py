@@ -1,7 +1,7 @@
 # ui/register_page.py
 import customtkinter as ctk
 from tkinter import messagebox
-from controllers.user_controller import register_user  # ✅ backend function for saving user
+from DugunSalonuApp_Backend.controllers.user_controller import register_user  # ✅ backend function for saving user
 
 class RegisterPage(ctk.CTkFrame):
     def __init__(self, master, on_register_complete=None, on_back=None):

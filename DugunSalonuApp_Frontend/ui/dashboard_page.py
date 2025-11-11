@@ -1,9 +1,9 @@
-import customtkinter as ctk
-from datetime import datetime
 import calendar
+from datetime import datetime
 from tkinter import messagebox
 
-from controllers.reservation_controller import get_calendar_data
+import customtkinter as ctk
+from DugunSalonuApp_Backend.controllers.reservation_controller import get_calendar_data
 
 class DashboardPage(ctk.CTkFrame):
     def __init__(self, master, user=None, on_logout=None, on_open_reservations=None,

@@ -5,7 +5,7 @@ from datetime import date
 import customtkinter as ctk
 from tkinter import messagebox
 
-from ui.widgets import CTkDatePicker
+from .widgets import CTkDatePicker
 
 
 class PersonnelPage(ctk.CTkFrame):

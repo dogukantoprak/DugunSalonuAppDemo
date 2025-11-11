@@ -1,9 +1,9 @@
 # models/user_model.py
-from database.db_manager import execute_query, fetch_one
+from DugunSalonuApp_Backend.database.db_manager import execute_query, fetch_one
 
 def create_table():
     """Ensure the users table exists."""
-    from database.db_manager import create_tables
+    from DugunSalonuApp_Backend.database.db_manager import create_tables
     create_tables()
 
 def add_user(data):

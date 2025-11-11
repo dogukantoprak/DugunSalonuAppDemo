@@ -1,5 +1,9 @@
 # controllers/user_controller.py
-from models.user_model import get_user_by_username, get_user_by_email, add_user
+from DugunSalonuApp_Backend.models.user_model import (
+    add_user,
+    get_user_by_email,
+    get_user_by_username,
+)
 
 def login_user(username, password):
     """Validate credentials and return (success, message, user) tuple."""

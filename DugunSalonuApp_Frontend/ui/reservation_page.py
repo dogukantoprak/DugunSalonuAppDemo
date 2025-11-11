@@ -3,8 +3,10 @@ from datetime import datetime
 from tkinter import messagebox
 
 import customtkinter as ctk
-
-from controllers.reservation_controller import get_calendar_data, get_reservations_for_date
+from DugunSalonuApp_Backend.controllers.reservation_controller import (
+    get_calendar_data,
+    get_reservations_for_date,
+)
 
 
 class ReservationPage(ctk.CTkFrame):

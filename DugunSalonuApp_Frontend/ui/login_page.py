@@ -1,7 +1,7 @@
 # ui/login_page.py
 import customtkinter as ctk
 from tkinter import messagebox
-from controllers.user_controller import login_user
+from DugunSalonuApp_Backend.controllers.user_controller import login_user
 
 class LoginPage(ctk.CTkFrame):
     def __init__(self, master, on_login=None, on_register=None, on_forgot_password=None):

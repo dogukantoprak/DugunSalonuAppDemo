@@ -5,7 +5,7 @@ from datetime import datetime
 from threading import RLock
 from typing import Any, Dict, List, Tuple
 
-from models.reservation_model import (
+from DugunSalonuApp_Backend.models.reservation_model import (
     add_reservation,
     get_reservations_by_date,
     get_reservations_for_month,

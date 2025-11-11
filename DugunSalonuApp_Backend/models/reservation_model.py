@@ -2,7 +2,7 @@
 from datetime import date
 from typing import Any, Dict, Iterable, List
 
-from database.db_manager import execute_insert, fetch_all
+from DugunSalonuApp_Backend.database.db_manager import execute_insert, fetch_all
 
 
 RESERVATION_COLUMNS = [

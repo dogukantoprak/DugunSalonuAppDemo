@@ -1,5 +1,5 @@
 # setup_db.py
-from database.db_manager import create_tables
+from DugunSalonuApp_Backend.database.db_manager import create_tables
 
 if __name__ == "__main__":
     create_tables()
