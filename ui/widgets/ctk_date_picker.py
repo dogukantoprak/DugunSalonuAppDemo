@@ -45,7 +45,8 @@ class CTkDatePicker(ctk.CTkFrame):
 
     def bind(self, sequence: str | None = None, func: Callable | None = None, add: str | None = None):  # type: ignore[override]
         if sequence == "<<DateEntrySelected>>":
-            return super().bind(sequence, func, add)
+            normalized_add = add if add in ("+", True) else "+"
+            return super().bind(sequence, func, normalized_add)
         return self.entry.bind(sequence, func, add)
 
     def get(self) -> str:
