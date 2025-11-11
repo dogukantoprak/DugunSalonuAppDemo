@@ -10,6 +10,7 @@ from DugunSalonuApp_Backend.controllers.reservation_controller import (
     create_reservation,
     get_calendar_data,
     get_reservations_for_date,
+    get_unavailable_slots,
 )
 from DugunSalonuApp_Backend.controllers.user_controller import (
     login_user,
@@ -122,6 +123,14 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=400, detail=message)
         response = {"message": message, "reservation": info}
         return response
+
+    @app.get("/api/reservations/unavailable")
+    def unavailable_slots(
+        date: str = Query(..., description="ISO date (YYYY-MM-DD)"),
+        salon: str = Query(..., description="Salon adı"),
+    ):
+        data = get_unavailable_slots(date, salon)
+        return data
 
     @app.get("/api/calendar")
     def calendar(

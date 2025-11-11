@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ReservationForm from "../components/ReservationForm";
 import ReservationList from "../components/ReservationList";
 import { api } from "../api/client";
 
 export default function ReservationsPage({ user, onLogout }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const [selectedDate, setSelectedDate] = useState(today);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryDate = searchParams.get("date");
+  const [selectedDate, setSelectedDate] = useState(() => queryDate || today);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +30,18 @@ export default function ReservationsPage({ user, onLogout }) {
     },
     [setReservations],
   );
+
+  useEffect(() => {
+    if (queryDate && queryDate !== selectedDate) {
+      setSelectedDate(queryDate);
+    }
+  }, [queryDate, selectedDate]);
+
+  useEffect(() => {
+    if (selectedDate && queryDate !== selectedDate) {
+      setSearchParams({ date: selectedDate });
+    }
+  }, [selectedDate, queryDate, setSearchParams]);
 
   useEffect(() => {
     loadReservations(selectedDate);

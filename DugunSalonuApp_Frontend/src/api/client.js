@@ -37,5 +37,7 @@ export const api = {
       body: JSON.stringify(body),
     }),
   getCalendar: (year, month) => request(`/api/calendar?year=${year}&month=${month}`),
+  getUnavailableSlots: (date, salon) =>
+    request(`/api/reservations/unavailable?date=${encodeURIComponent(date)}&salon=${encodeURIComponent(salon)}`),
   health: () => request("/api/health"),
 };

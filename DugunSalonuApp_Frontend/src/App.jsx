@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ReservationsPage from "./pages/ReservationsPage";
+import DashboardPage from "./pages/DashboardPage";
 import "./App.css";
 
 const STORAGE_KEY = "dugursalonu-user";
@@ -32,6 +33,14 @@ function App() {
       <Routes>
         <Route
           path="/"
+          element={
+            <ProtectedRoute user={user}>
+              <DashboardPage user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reservations"
           element={
             <ProtectedRoute user={user}>
               <ReservationsPage user={user} onLogout={handleLogout} />
