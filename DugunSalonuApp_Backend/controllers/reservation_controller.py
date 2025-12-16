@@ -138,6 +138,9 @@ def _prepare_payload(data: Dict[str, Any]) -> Dict[str, Any]:
     event_type = _clean_str(data.get("event_type"))
     salon = _clean_str(data.get("salon"))
     client_name = _clean_str(data.get("client_name"))
+    bride_name = _clean_str(data.get("bride_name"))
+    groom_name = _clean_str(data.get("groom_name"))
+    region = _clean_str(data.get("region"))
 
     if not event_type:
         raise ValueError("Etkinlik türü zorunludur.")
@@ -160,8 +163,11 @@ def _prepare_payload(data: Dict[str, Any]) -> Dict[str, Any]:
         "guests": guests,
         "salon": salon,
         "client_name": client_name,
+        "bride_name": bride_name,
+        "groom_name": groom_name,
         "tc_identity": _clean_str(data.get("tc_identity")),
         "phone": _clean_str(data.get("phone")),
+        "region": region,
         "address": _clean_str(data.get("address")),
         "contract_no": _clean_str(data.get("contract_no")),
         "contract_date": _ensure_iso_date(data.get("contract_date"), "Sözleşme tarihi", required=False),
@@ -176,6 +182,7 @@ def _prepare_payload(data: Dict[str, Any]) -> Dict[str, Any]:
         "menu_name": _clean_str(data.get("menu_name")),
         "menu_detail": _clean_text_block(data.get("menu_detail")),
         "special_request": _clean_text_block(data.get("special_request")),
+        "note": _clean_text_block(data.get("note")),
     }
 
     # Soft validation for logical ranges

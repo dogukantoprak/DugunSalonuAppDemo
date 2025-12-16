@@ -14,8 +14,11 @@ RESERVATION_COLUMNS = [
     "guests",
     "salon",
     "client_name",
+    "bride_name",
+    "groom_name",
     "tc_identity",
     "phone",
+    "region",
     "address",
     "contract_no",
     "contract_date",
@@ -30,6 +33,7 @@ RESERVATION_COLUMNS = [
     "menu_name",
     "menu_detail",
     "special_request",
+    "note",
     "created_at",
     "updated_at",
 ]
@@ -51,8 +55,11 @@ def add_reservation(reservation: Dict[str, Any]) -> int:
             guests,
             salon,
             client_name,
+            bride_name,
+            groom_name,
             tc_identity,
             phone,
+            region,
             address,
             contract_no,
             contract_date,
@@ -66,7 +73,8 @@ def add_reservation(reservation: Dict[str, Any]) -> int:
             tahsilatlar,
             menu_name,
             menu_detail,
-            special_request
+            special_request,
+            note
         )
         VALUES (
             :event_date,
@@ -76,8 +84,11 @@ def add_reservation(reservation: Dict[str, Any]) -> int:
             :guests,
             :salon,
             :client_name,
+            :bride_name,
+            :groom_name,
             :tc_identity,
             :phone,
+            :region,
             :address,
             :contract_no,
             :contract_date,
@@ -91,7 +102,8 @@ def add_reservation(reservation: Dict[str, Any]) -> int:
             :tahsilatlar,
             :menu_name,
             :menu_detail,
-            :special_request
+            :special_request,
+            :note
         )
         """,
         reservation,
@@ -111,8 +123,11 @@ def get_reservations_by_date(event_date: str) -> List[Dict[str, Any]]:
             guests,
             salon,
             client_name,
+            bride_name,
+            groom_name,
             tc_identity,
             phone,
+            region,
             address,
             contract_no,
             contract_date,
@@ -127,6 +142,7 @@ def get_reservations_by_date(event_date: str) -> List[Dict[str, Any]]:
             menu_name,
             menu_detail,
             special_request,
+            note,
             created_at,
             updated_at
         FROM reservations
@@ -160,8 +176,11 @@ def get_reservations_for_month(year: int, month: int) -> List[Dict[str, Any]]:
             guests,
             salon,
             client_name,
+            bride_name,
+            groom_name,
             tc_identity,
             phone,
+            region,
             address,
             contract_no,
             contract_date,
@@ -176,6 +195,7 @@ def get_reservations_for_month(year: int, month: int) -> List[Dict[str, Any]]:
             menu_name,
             menu_detail,
             special_request,
+            note,
             created_at,
             updated_at
         FROM reservations

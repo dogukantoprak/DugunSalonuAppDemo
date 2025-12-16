@@ -43,9 +43,12 @@ class ReservationPayload(BaseModel):
     event_type: str
     salon: str
     client_name: str
+    bride_name: Optional[str] = None
+    groom_name: Optional[str] = None
     guests: Optional[int] = None
     tc_identity: Optional[str] = None
     phone: Optional[str] = None
+    region: Optional[str] = None
     address: Optional[str] = None
     contract_no: Optional[str] = None
     contract_date: Optional[str] = None
@@ -60,6 +63,7 @@ class ReservationPayload(BaseModel):
     menu_name: Optional[str] = None
     menu_detail: Optional[str] = None
     special_request: Optional[str] = None
+    note: Optional[str] = None
 
 
 def create_app() -> FastAPI:

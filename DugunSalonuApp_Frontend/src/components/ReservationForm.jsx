@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
+import { formatDisplayDate, normalizeToIsoDate } from "../api/date";
 
 const EVENT_TYPES = ["Düğün", "Nişan", "Kına", "Toplantı", "Mezuniyet", "Diğer"];
 const SALON_OPTIONS = ["Salon A", "Salon B", "Salon C"];
@@ -11,37 +12,42 @@ const TIME_STEP_MINUTES = 15;
 const START_SLOTS = buildTimeSlots({ startHour: 10, endHour: 24, includeEnd: false });
 const END_SLOTS = buildTimeSlots({ startHour: 10, endHour: 24, includeEnd: true, startOffset: TIME_STEP_MINUTES });
 
-const initialState = (defaultDate) => {
-  const today = defaultDate || new Date().toISOString().slice(0, 10);
+const initialState = (defaultDate, initialData) => {
+  const today = normalizeToIsoDate(defaultDate) || new Date().toISOString().slice(0, 10);
   return {
-    event_date: today,
-    contract_date: today,
-    start_time: "",
-    end_time: END_SLOTS[0],
-    event_type: EVENT_TYPES[0],
-    guests: "",
-    salon: SALON_OPTIONS[0],
-    client_name: "",
-    tc_identity: "",
-    phone: "",
-    address: "",
-    contract_no: "",
-    status: STATUS_OPTIONS[0],
-    event_price: "",
-    menu_price: "",
-    deposit_percent: "",
-    deposit_amount: "",
-    installments: INSTALLMENT_OPTIONS[0],
-    payment_type: PAYMENT_TYPES[0],
-    tahsilatlar: "",
-    menu_name: MENU_OPTIONS[0],
-    menu_detail: "",
-    special_request: "",
+    event_date: normalizeToIsoDate(initialData?.event_date) || today,
+    contract_date: normalizeToIsoDate(initialData?.contract_date || initialData?.event_date) || today,
+    start_time: initialData?.start_time || "",
+    end_time: initialData?.end_time || END_SLOTS[0],
+    event_type: initialData?.event_type || EVENT_TYPES[0],
+    guests: initialData?.guests ?? "",
+    salon: initialData?.salon || SALON_OPTIONS[0],
+    client_name: initialData?.client_name || "",
+    bride_name: initialData?.bride_name || "",
+    groom_name: initialData?.groom_name || "",
+    tc_identity: initialData?.tc_identity || "",
+    phone: initialData?.phone || "",
+    address: initialData?.address || "",
+    contract_no: initialData?.contract_no || "",
+    status: initialData?.status || STATUS_OPTIONS[0],
+    event_price: initialData?.event_price ?? "",
+    menu_price: initialData?.menu_price ?? "",
+    deposit_percent: initialData?.deposit_percent ?? "",
+    deposit_amount: initialData?.deposit_amount ?? "",
+    installments: initialData?.installments ? String(initialData.installments) : INSTALLMENT_OPTIONS[0],
+    payment_type: initialData?.payment_type || PAYMENT_TYPES[0],
+    tahsilatlar: initialData?.tahsilatlar || "",
+    menu_name: initialData?.menu_name || MENU_OPTIONS[0],
+    menu_detail: initialData?.menu_detail || "",
+    special_request: initialData?.special_request || "",
+    note: initialData?.note || "",
+    region: initialData?.region || "",
   };
 };
 
-export default function ReservationForm({ defaultDate, onSubmit, onCancel, submitting }) {
-  const [form, setForm] = useState(() => initialState(defaultDate));
+export default function ReservationForm({ defaultDate, onSubmit, onCancel, submitting, initialData }) {
+  const [form, setForm] = useState(() => initialState(defaultDate, initialData));
+  const isEditing = Boolean(initialData?.id);
   const [activeTab, setActiveTab] = useState("reservation");
   const [slotMessage, setSlotMessage] = useState(
     "Salon ve tarih seçimi yaptıktan sonra uygun 15 dakikalık saatleri görebilirsiniz.",
@@ -50,12 +56,9 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      event_date: defaultDate || prev.event_date,
-      contract_date: defaultDate || prev.contract_date,
-    }));
-  }, [defaultDate]);
+    setForm(initialState(defaultDate, initialData));
+    setActiveTab("reservation");
+  }, [defaultDate, initialData]);
 
   useEffect(() => {
     let ignore = false;
@@ -113,15 +116,15 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
 
   useEffect(() => {
     if (!availableStarts.length) {
-      if (form.start_time) {
+      if (form.start_time && !isEditing) {
         setForm((prev) => ({ ...prev, start_time: "" }));
       }
       return;
     }
-    if (!form.start_time || !availableStarts.includes(form.start_time)) {
+    if (!form.start_time || (!availableStarts.includes(form.start_time) && !isEditing)) {
       setForm((prev) => ({ ...prev, start_time: availableStarts[0] }));
     }
-  }, [availableStarts, form.start_time]);
+  }, [availableStarts, form.start_time, isEditing]);
 
   const endOptions = useMemo(() => {
     if (!form.start_time) {
@@ -133,13 +136,18 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
   }, [form.start_time]);
 
   useEffect(() => {
-    if (!form.end_time || !endOptions.includes(form.end_time)) {
+    if (!form.end_time || (!endOptions.includes(form.end_time) && !isEditing)) {
       setForm((prev) => ({ ...prev, end_time: endOptions[0] }));
     }
-  }, [endOptions, form.end_time]);
+  }, [endOptions, form.end_time, isEditing]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (name === "event_date" || name === "contract_date") {
+      const isoValue = normalizeToIsoDate(value);
+      setForm((prev) => ({ ...prev, [name]: isoValue || value }));
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -149,7 +157,7 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
   };
 
   const handleAddCollection = () => {
-    const stamp = new Date().toLocaleDateString("tr-TR");
+    const stamp = formatDisplayDate(new Date());
     setForm((prev) => ({
       ...prev,
       tahsilatlar: `${prev.tahsilatlar}${prev.tahsilatlar ? "\n" : ""}${stamp} - `,
@@ -167,6 +175,9 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
       deposit_amount: toNumber(form.deposit_amount),
       installments: form.installments ? Number(form.installments) : undefined,
     };
+    if (isEditing && initialData?.id !== undefined) {
+      payload.id = initialData.id;
+    }
     onSubmit(payload);
   };
 
@@ -175,8 +186,8 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
       <div className="form-dialog large">
         <header>
           <div>
-            <p className="muted">📝 Yeni Rezervasyon Ekle</p>
-            <h2>Operasyon detaylarını doldurun</h2>
+            <p className="muted">{isEditing ? "📝 Rezervasyonu Düzenle" : "📝 Yeni Rezervasyon Ekle"}</p>
+            <h2>{isEditing ? "Bilgileri güncelleyin" : "Operasyon detaylarını doldurun"}</h2>
           </div>
           <button className="ghost" onClick={onCancel} type="button">
             Kapat
@@ -278,12 +289,24 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
                   <input name="client_name" value={form.client_name} onChange={handleChange} required />
                 </label>
                 <label>
+                  Gelin
+                  <input name="bride_name" value={form.bride_name} onChange={handleChange} />
+                </label>
+                <label>
+                  Damat
+                  <input name="groom_name" value={form.groom_name} onChange={handleChange} />
+                </label>
+                <label>
                   TC Kimlik
                   <input name="tc_identity" value={form.tc_identity} onChange={handleChange} />
                 </label>
                 <label>
                   Telefon
                   <input name="phone" value={form.phone} onChange={handleChange} />
+                </label>
+                <label>
+                  Memleket / Yöre
+                  <input name="region" value={form.region || ""} onChange={handleChange} />
                 </label>
                 <label>
                   Sözleşme No
@@ -295,10 +318,16 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
                 </label>
               </div>
 
-              <label className="full-width">
-                Adres
-                <textarea name="address" value={form.address} onChange={handleTextareaChange} rows={3} />
-              </label>
+              <div className="full-width address-notes">
+                <label className="address-field">
+                  Adres
+                  <textarea name="address" value={form.address} onChange={handleTextareaChange} rows={3} />
+                </label>
+                <label className="note-field">
+                  Not
+                  <textarea name="note" value={form.note || ""} onChange={handleTextareaChange} rows={3} />
+                </label>
+              </div>
             </div>
           )}
 
@@ -428,7 +457,7 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
                 Vazgeç
               </button>
               <button type="submit" disabled={submitting}>
-                {submitting ? "Kaydediliyor..." : "Rezervasyonu Kaydet"}
+                {submitting ? "Kaydediliyor..." : isEditing ? "Rezervasyonu Güncelle" : "Rezervasyonu Kaydet"}
               </button>
             </div>
           </div>

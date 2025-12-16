@@ -73,6 +73,8 @@ def create_tables():
             guests INTEGER,
             salon TEXT,
             client_name TEXT,
+            bride_name TEXT,
+            groom_name TEXT,
             tc_identity TEXT,
             phone TEXT,
             address TEXT,
@@ -89,6 +91,8 @@ def create_tables():
             menu_name TEXT,
             menu_detail TEXT,
             special_request TEXT,
+            region TEXT,
+            note TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
@@ -98,6 +102,14 @@ def create_tables():
         CREATE INDEX IF NOT EXISTS idx_reservations_event_date
         ON reservations (event_date)
     """)
+
+    # Backward-compatible column additions
+    for column in ("bride_name", "groom_name", "region", "note"):
+        try:
+            cursor.execute(f"ALTER TABLE reservations ADD COLUMN {column} TEXT")
+        except sqlite3.OperationalError:
+            # Column already exists
+            pass
 
     conn.commit()
     conn.close()
