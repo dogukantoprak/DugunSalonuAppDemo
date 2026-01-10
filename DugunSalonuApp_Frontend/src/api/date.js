@@ -2,6 +2,8 @@ function pad(value) {
   return String(value).padStart(2, "0");
 }
 
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
 function buildDisplayDate(day, month, year) {
   return `${pad(day)}/${pad(month)}/${year}`;
 }
@@ -15,16 +17,16 @@ export function normalizeToIsoDate(input) {
   const text = String(input).trim();
   if (!text) return "";
 
-  const isoLike = text.match(/^(\d{4})[-/.](\d{2})[-/.](\d{2})/);
+  const isoLike = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
   if (isoLike) {
     const [, year, month, day] = isoLike;
-    return `${year}-${month}-${day}`;
+    return `${year}-${pad(month)}-${pad(day)}`;
   }
 
-  const dmy = text.match(/^(\d{2})[-/.](\d{2})[-/.](\d{4})$/);
+  const dmy = text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
   if (dmy) {
     const [, day, month, year] = dmy;
-    return `${year}-${month}-${day}`;
+    return `${year}-${pad(month)}-${pad(day)}`;
   }
 
   const parsed = new Date(text);
@@ -72,4 +74,23 @@ export function formatDisplayDate(value) {
   }
 
   return value;
+}
+
+export function isIsoDate(value) {
+  if (typeof value !== "string" || !ISO_DATE_PATTERN.test(value)) {
+    return false;
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+  return (
+    utcDate.getUTCFullYear() === year &&
+    utcDate.getUTCMonth() + 1 === month &&
+    utcDate.getUTCDate() === day
+  );
+}
+
+export function formatInputDate(value) {
+  if (!value) return "";
+  const formatted = formatDisplayDate(value);
+  return formatted === "—" ? "" : formatted;
 }

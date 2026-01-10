@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import DateInput from "../components/DateInput";
 import ReservationForm from "../components/ReservationForm";
 import ReservationList from "../components/ReservationList";
 import { api } from "../api/client";
-import { normalizeToIsoDate } from "../api/date";
+import { isIsoDate, normalizeToIsoDate } from "../api/date";
 
 export default function ReservationsPage({ user, onLogout }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryDate = searchParams.get("date");
-  const [selectedDate, setSelectedDate] = useState(() => normalizeToIsoDate(queryDate) || today);
+  const normalizedQuery = normalizeToIsoDate(queryDate);
+  const selectedDate = isIsoDate(normalizedQuery) ? normalizedQuery : today;
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,13 +35,6 @@ export default function ReservationsPage({ user, onLogout }) {
     },
     [setReservations],
   );
-
-  useEffect(() => {
-    const normalized = normalizeToIsoDate(queryDate);
-    if (normalized && normalized !== selectedDate) {
-      setSelectedDate(normalized);
-    }
-  }, [queryDate, selectedDate]);
 
   useEffect(() => {
     if (selectedDate && queryDate !== selectedDate) {
@@ -114,6 +109,16 @@ export default function ReservationsPage({ user, onLogout }) {
     navigate("/");
   }, [navigate]);
 
+  const handleDateChange = useCallback(
+    (nextDate) => {
+      const normalized = normalizeToIsoDate(nextDate);
+      if (isIsoDate(normalized)) {
+        setSearchParams({ date: normalized });
+      }
+    },
+    [setSearchParams],
+  );
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
@@ -122,11 +127,7 @@ export default function ReservationsPage({ user, onLogout }) {
           <h1>{user?.name || user?.username}</h1>
         </div>
         <div className="header-actions">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(event) => setSelectedDate(normalizeToIsoDate(event.target.value) || event.target.value)}
-          />
+          <DateInput value={selectedDate} onChange={handleDateChange} />
           <button onClick={handleOpenCreate}>Yeni Rezervasyon</button>
           <button className="ghost" onClick={handleGoBack}>
             Geri

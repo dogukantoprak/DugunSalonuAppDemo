@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import DateInput from "./DateInput";
 import { api } from "../api/client";
 import { formatDisplayDate, normalizeToIsoDate } from "../api/date";
 
@@ -56,7 +57,8 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
-    setForm(initialState(defaultDate, initialData));
+    const nextForm = initialState(defaultDate, initialData);
+    setForm(nextForm);
     setActiveTab("reservation");
   }, [defaultDate, initialData]);
 
@@ -143,13 +145,12 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    if (name === "event_date" || name === "contract_date") {
-      const isoValue = normalizeToIsoDate(value);
-      setForm((prev) => ({ ...prev, [name]: isoValue || value }));
-      return;
-    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleDateChange = useCallback((name, nextValue) => {
+    setForm((prev) => ({ ...prev, [name]: normalizeToIsoDate(nextValue) || nextValue }));
+  }, []);
 
   const handleTextareaChange = (event) => {
     const { name, value } = event.target;
@@ -216,7 +217,12 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
               <div className="section-grid">
                 <label>
                   Tarih
-                  <input name="event_date" type="date" value={form.event_date} onChange={handleChange} required />
+                  <DateInput
+                    name="event_date"
+                    value={form.event_date}
+                    onChange={(value) => handleDateChange("event_date", value)}
+                    required
+                  />
                 </label>
                 <label>
                   Başlangıç Saati
@@ -314,7 +320,12 @@ export default function ReservationForm({ defaultDate, onSubmit, onCancel, submi
                 </label>
                 <label>
                   Sözleşme Tarihi
-                  <input name="contract_date" type="date" value={form.contract_date} onChange={handleChange} />
+                  <DateInput
+                    name="contract_date"
+                    value={form.contract_date}
+                    onChange={(value) => handleDateChange("contract_date", value)}
+                    allowEmpty
+                  />
                 </label>
               </div>
 
