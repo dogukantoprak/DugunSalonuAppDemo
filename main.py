@@ -5,7 +5,7 @@ import uvicorn
 
 def main():
     uvicorn.run(
-        "DugunSalonuApp_Backend.api.server:app",
+        "backend.api.server:app",
         host="0.0.0.0",
         port=8000,
         reload=False,
