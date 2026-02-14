@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DugunSalonuApp - Modern Wedding Hall Management</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-glow"></div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-ring"></i> DugunSalonuApp
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#tech-stack">Tech Stack</a>
+
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <span class="badge">v1.0.0 Release</span>
+            <h1>Modern Management for <br><span class="gradient-text">Wedding Halls</span></h1>
+            <p>A comprehensive, full-stack solution to streamline reservations, manage personnel, and track expenses
+                with a beautiful, responsive interface.</p>
+            <div class="cta-group">
+                <a href="#features" class="btn btn-primary">Explore Features</a>
+
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="app-mockup">
+                <img src="assets/dashboard_screenshot.png" alt="App Dashboard" class="screenshot-img"
+                    onerror="this.onerror=null;this.src='https://placehold.co/800x500?text=App+Dashboard+Screenshot';">
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <h2>Powerful Features</h2>
+        <p class="section-desc">Everything you need to run your venue efficiently.</p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon-box">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <h3>Smart Reservations</h3>
+                <p>Visual calendar interface to manage bookings, check availability, and prevent double-booking
+                    seamlessly.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon-box">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3>Personnel Management</h3>
+                <p>Track employee shifts, roles, and performance. Keep your team organized and informed.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon-box">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <h3>Financial Insights</h3>
+                <p>Detailed expense tracking and reporting. Visualize your revenue and costs to maximize profitability.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="icon-box">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3>Secure Access</h3>
+                <p>Role-based authentication ensures that sensitive data is only accessible to authorized personnel.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="gallery">
+        <h2>App Gallery</h2>
+        <p class="section-desc">Take a closer look at the key interfaces.</p>
+        <div class="gallery-grid">
+            <div class="gallery-item">
+                <img src="assets/reservations_screenshot.png" alt="Reservations Management"
+                    onclick="window.open(this.src, '_blank')">
+                <div class="gallery-caption">Reservations Management</div>
+            </div>
+            <div class="gallery-item">
+                <img src="assets/new_reservation.png" alt="New Reservation" onclick="window.open(this.src, '_blank')">
+                <div class="gallery-caption">New Reservation Modal</div>
+            </div>
+            <div class="gallery-item">
+                <img src="assets/personnel_screenshot.png" alt="Personnel Management"
+                    onclick="window.open(this.src, '_blank')">
+                <div class="gallery-caption">Personnel Management</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tech-stack" class="tech-stack">
+        <h2>Built With Modern Tech</h2>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <i class="fa-brands fa-react" style="color: #61DAFB;"></i>
+                <span>React</span>
+            </div>
+            <div class="tech-item">
+                <i class="fa-solid fa-bolt" style="color: #FFD700;"></i> <!-- Vite Icon placeholder -->
+                <span>Vite</span>
+            </div>
+            <div class="tech-item">
+                <i class="fa-brands fa-python" style="color: #3776AB;"></i>
+                <span>FastAPI</span>
+            </div>
+            <div class="tech-item">
+                <i class="fa-solid fa-atom" style="color: #4DB33D;"></i> <!-- Electron Icon placeholder -->
+                <span>Electron</span>
+            </div>
+            <div class="tech-item">
+                <i class="fa-solid fa-database" style="color: #00758F;"></i>
+                <span>PostgreSQL</span> <!-- or SQLite based on project -->
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 DugunSalonuApp. All rights reserved.</p>
+        <div class="footer-links">
+
+        </div>
+    </footer>
+</body>
+
+</html>
