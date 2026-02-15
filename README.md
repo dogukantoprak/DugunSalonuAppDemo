@@ -8,7 +8,7 @@
   Rezervasyonlardan personel takibine, mali raporlardan ayarlara kadar
   düğün salonu operasyonlarınızı tek panelden yönetin.
 
-  [![Live Demo](https://img.shields.io/badge/🌐_Canlı_Demo-GitHub_Pages-blue?style=for-the-badge)](https://dogukantoprak.github.io/DugunSalonuApp/)
+  [![Live Demo](https://img.shields.io/badge/🌐_Canlı_Demo-GitHub_Pages-blue?style=for-the-badge)](https://dogukantoprak.github.io/DugunSalonuAppDemo/)
   [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
   [![FastAPI](https://img.shields.io/badge/FastAPI-0.112-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
   [![Electron](https://img.shields.io/badge/Electron-31-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
@@ -52,7 +52,7 @@ tek bir modern arayüzde sunulmuştur.
 
 ## 🌐 Canlı Demo
 
-> **[🔗 https://dogukantoprak.github.io/DugunSalonuApp/](https://dogukantoprak.github.io/DugunSalonuApp/)**
+> **[🔗 https://dogukantoprak.github.io/DugunSalonuAppDemo/](https://dogukantoprak.github.io/DugunSalonuAppDemo/)**
 
 Proje tanıtım sayfasında uygulamanın özelliklerini, ekran görüntülerini ve teknoloji altyapısını inceleyebilirsiniz.
 
@@ -184,7 +184,7 @@ Proje tanıtım sayfasında uygulamanın özelliklerini, ekran görüntülerini 
 ### 1. Projeyi Klonlayın
 
 ```bash
-git clone https://github.com/dogukantoprak/DugunSalonuApp.git
+git clone https://github.com/dogukantoprak/DugunSalonuAppDemo.git
 cd DugunSalonuApp
 ```
 
@@ -340,7 +340,7 @@ Bu proje eğitim ve portfolyo amacıyla geliştirilmiştir.
 
 <div align="center">
 
-  **[🌐 Canlı Demo](https://dogukantoprak.github.io/DugunSalonuApp/)** · **[⬆ Başa Dön](#-dugunsalonuapp)**
+  **[🌐 Canlı Demo](https://dogukantoprak.github.io/DugunSalonuAppDemo/)** · **[⬆ Başa Dön](#-dugunsalonuappdemo)**
 
   *React 19 • TypeScript • FastAPI • Electron • SQLite ile geliştirildi*
 
